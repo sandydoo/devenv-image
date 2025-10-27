@@ -40,6 +40,7 @@
             extraPkgs = [ devenv.packages.${system}.devenv ];
             nixConf = {
               "filter-syscalls" = false;
+              "experimental-features" = [ "nix-command" "flakes" ];
             };
             uid = 1000;
             gid = 100;
