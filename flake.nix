@@ -7,6 +7,17 @@
     devenv.url = "github:cachix/devenv/latest";
   };
 
+  nixConfig = {
+    "extra-substituters" = [
+      "https://cachix.cachix.org"
+      "https://devenv.cachix.org"
+    ];
+    "extra-trusted-public-keys" = [
+      "cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM="
+      "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+    ];
+  };
+
   outputs =
     {
       self,
