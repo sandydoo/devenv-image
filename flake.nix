@@ -40,14 +40,26 @@
             name = "devenv";
             extraPkgs = [ devenv.packages.${system}.devenv ];
             nixConf = {
-              "filter-syscalls" = false;
-              "experimental-features" = [ "nix-command" "flakes" ];
+              filter-syscalls = false;
+              experimental-features = [
+                "nix-command"
+                "flakes"
+              ];
+              auto-optimise-store = true;
             };
             uid = 1000;
             gid = 100;
             uname = "devenv";
             gname = "users";
             bundleNixpkgs = false;
+            gitMinimal =
+              (pkgs.git.override {
+                perlSupport = false;
+                pythonSupport = false;
+                withManual = false;
+                withpcre2 = false;
+              }
+            ).overrideAttrs (_: { doInstallCheck = false; });
           };
         in
         image;
