@@ -2,8 +2,9 @@
   description = "devenv container";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.follows = "devenv/nixpkgs";
     nix.url = "github:NixOS/nix";
+    nix.inputs.nixpkgs.follows = "nixpkgs";
     devenv.url = "github:cachix/devenv/latest";
   };
 
