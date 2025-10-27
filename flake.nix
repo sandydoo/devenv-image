@@ -27,10 +27,13 @@
       devenv,
       ...
     }:
+    let
+      systems = [ "x86_64-linux" "aarch64-linux" ];
+      forAllSystems = nixpkgs.lib.genAttrs systems;
+    in
     {
-      packages.x86_64-linux.devenv-image =
+      packages = forAllSystems (system:
         let
-          system = "x86_64-linux";
           pkgs = nixpkgs.legacyPackages.${system};
 
           docker = "${nix}/docker.nix";
@@ -82,12 +85,15 @@
                 pythonSupport = false;
                 withManual = false;
                 withpcre2 = false;
-              }
-            ).overrideAttrs (_: { doInstallCheck = false; });
+              }).overrideAttrs
+                (_: {
+                  doInstallCheck = false;
+                });
             openssh = pkgs.emptyDirectory;
             wget = pkgs.emptyDirectory;
           };
         in
-        image;
+        { devenv-image = image; }
+      );
     };
 }
