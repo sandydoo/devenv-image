@@ -37,8 +37,17 @@
 
           image = import docker {
             inherit pkgs;
+
             name = "devenv";
-            extraPkgs = [ devenv.packages.${system}.devenv ];
+
+            # TODO: tags
+
+            # Set up non-root user
+            uid = 1000;
+            gid = 100;
+            uname = "devenv";
+            gname = "users";
+
             nixConf = {
               filter-syscalls = false;
               experimental-features = [
@@ -47,11 +56,18 @@
               ];
               auto-optimise-store = true;
             };
-            uid = 1000;
-            gid = 100;
-            uname = "devenv";
-            gname = "users";
+
+            # Add devenv
+            extraPkgs = [ devenv.packages.${system}.devenv ];
+
+            # Don't bundle Nix to reduce the image size
             bundleNixpkgs = false;
+
+            # Remove unneeded tools or reduce their closure size
+            coreutils-full = pkgs.busybox;
+            curl = pkgs.emptyDirectory;
+            gnutar = pkgs.emptyDirectory;
+            gzip = pkgs.emptyDirectory;
             gitMinimal =
               (pkgs.git.override {
                 perlSupport = false;
@@ -60,6 +76,8 @@
                 withpcre2 = false;
               }
             ).overrideAttrs (_: { doInstallCheck = false; });
+            openssh = pkgs.emptyDirectory;
+            wget = pkgs.emptyDirectory;
           };
         in
         image;
