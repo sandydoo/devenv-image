@@ -48,6 +48,6 @@
             bundleNixpkgs = false;
           };
         in
-        image.override { uid = 1001; };
+        image;
     };
 }
