@@ -35,12 +35,20 @@
 
           docker = "${nix}/docker.nix";
 
+          devenvCli = devenv.packages.${system}.devenv;
+
           image = import docker {
             inherit pkgs;
 
             name = "devenv";
 
-            # TODO: tags
+            Labels = {
+              "org.opencontainers.image.title" = "devenv-image";
+              "org.opencontainers.image.source" = "https://github.com/sandydoo/devenv-image";
+              "org.opencontainers.image.vendor" = "Cachix";
+              "org.opencontainers.image.version" = devenvCli.version;
+              "org.opencontainers.image.description" = "devenv container image";
+            };
 
             # Set up non-root user
             uid = 1000;
@@ -58,7 +66,7 @@
             };
 
             # Add devenv
-            extraPkgs = [ devenv.packages.${system}.devenv ];
+            extraPkgs = [ devenvCli ];
 
             # Don't bundle Nix to reduce the image size
             bundleNixpkgs = false;
