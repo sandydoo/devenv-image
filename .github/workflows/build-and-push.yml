@@ -13,8 +13,6 @@ env:
 
 jobs:
   devenv:
-    env:
-      IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/devenv
     strategy:
       matrix:
         include:
@@ -67,13 +65,14 @@ jobs:
         id: push
         run: |
           IMAGE_ID="${{ steps.build.outputs.image_id }}"
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REPOSITORY }}/devenv"
 
           # Save digest for manifest creation
           mkdir -p /tmp/digests
           DIGEST_PATH="/tmp/digests/${{ matrix.arch }}.digest"
 
           # Use skopeo to push directly by digest without creating any tags
-          nix run nixpkgs#skopeo -- copy --preserve-digests --digestfile "$DIGEST_PATH" "docker-daemon:${IMAGE_ID}" "docker://${{ env.IMAGE_NAME }}" --format v2s2
+          nix run nixpkgs#skopeo -- copy --preserve-digests --digestfile "$DIGEST_PATH" "docker-daemon:${IMAGE_ID}" "docker://${IMAGE_NAME}" --format v2s2
 
           DIGEST=$(cat "$DIGEST_PATH")
           echo "Pushed image with digest: $DIGEST"
@@ -90,8 +89,6 @@ jobs:
   devenv-manifest:
     needs: devenv
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/devenv
     permissions:
       contents: read
       packages: write
@@ -116,7 +113,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/devenv
           context: git
 
       - name: Download all digests
@@ -128,6 +125,8 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REPOSITORY }}/devenv"
+
           # Read the digests
           X86_DIGEST=$(cat /tmp/digests/x86_64-linux.digest)
           ARM_DIGEST=$(cat /tmp/digests/aarch64-linux.digest)
@@ -140,7 +139,7 @@ jobs:
           for tag in $(echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'); do
             echo "Creating manifest list for $tag"
             docker buildx imagetools create -t "$tag" \
-              "${{ env.IMAGE_NAME }}@${X86_DIGEST}" \
-              "${{ env.IMAGE_NAME }}@${ARM_DIGEST}"
+              "${IMAGE_NAME}@${X86_DIGEST}" \
+              "${IMAGE_NAME}@${ARM_DIGEST}"
           done
 
